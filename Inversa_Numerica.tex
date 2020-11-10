@@ -1,0 +1,241 @@
+\documentclass[a4paper]{scrartcl}
+\usepackage[utf8]{inputenc}
+\usepackage{fullpage}
+\usepackage{tasks}
+\usepackage{amsmath,graphicx,amssymb,amsfonts,mathtools}
+\usepackage[spanish]{babel}
+%\usepackage[T1]{fontenc}
+%\usepackage{fourier}
+\usepackage[dvipsnames]{xcolor}
+\usepackage{soul}
+\usepackage{alltt}
+\newcommand{\then}{\Rightarrow}
+\definecolor{blue20}{rgb}{0.9,0.85,1}
+\sethlcolor{blue20}
+%\pagecolor{black}
+
+\begin{document}
+\begin{center}
+    \huge{Universidad Autonóma de Nuevo León} \\
+    \LARGE{Facultad de Ciencias Fisico Matemáticas}
+\end{center}
+
+\vspace{1 cm}
+\begin{center}
+    \Large{Metodos Matemáticos de la Fisica II}
+\end{center}
+
+\vspace{0.5cm}
+\begin{center}
+    \LARGE\textbf{Metodo numérico para obtener la matriz numerica inversa}\\
+\end{center}
+
+\vspace{1.5cm}
+\begin{center}
+    \large Lissette Galvan Tlapale 
+\end{center}
+\begin{center}
+    \large Raul Eduardo Santoy Flores 
+\end{center}
+\begin{center}
+    \large Fernando Martinez Diaz
+\end{center}
+
+\vspace{6cm}
+\begin{center}
+    \today
+\end{center}
+
+\newpage
+\section{Introducción}
+
+Los calculos operacionales de matrices cuadradas por lo regular suelen complicarse cuando se incrementa su dimensión. Recurrimos a solucionarlo numericamente implementando el metodo de la \textbf{adjunta} para obtener la matriz inversa y la \textbf{regla de Cramer} para obtener los determinantes de todas las matrices obtenidas. Escribimos el codigo en fortran.
+
+\section{Creando la matriz de $9\times9$}
+
+Construimos la matriz $A$ de dimensión $n=9$ con los siguientes ciclos
+\begin{verbatim}
+      n = 9
+      Do i = 1,n
+         A(i,i) = 4
+      end do
+
+      Do i =1,n
+         if (mod(i,3).ne.0.and.i.lt.9) then
+            A(i,i+1) = -1
+         end if
+         if (mod(i-1,3).ne.0.and.i.gt.1) then
+            A(i,i-1) = -1
+         end if
+         if (i.lt.7) then
+            A(i,i+3) = -1
+         end if
+         if (i.gt.3) then
+            A(i,i-3) = -1
+         end if
+      end do
+\end{verbatim}
+Como resultado obtenemos
+\begin{figure}[h!]
+    \centering
+    \includegraphics{Matriz A.png}
+    \caption{Contruyendo matriz $A$ a partir de ciclos}
+    \label{Matriz A}
+\end{figure}
+
+Construimos nuestro vector $Y(i)$
+\begin{verbatim}
+      Y(1) = 75
+      Y(2) = 0
+      Y(3) = 50
+      Y(4) = 75
+      Y(5) = 0
+      Y(6) = 50
+      Y(7) = 175
+      Y(8) = 100
+      Y(9) = 150
+\end{verbatim}
+Lo que sigue es aplicar el metodo de la adjunta para obtener la matriz inversa $M$, donde muchas de las variables son contadoras. Calculamos el determinante de $A$ utilizando la subrutina \texttt{TSuperior(n,A,b)} \begin{alltt}
+      \textcolor{blue}{Call TSuperior(n,A,b)}
+      DetA = (-1)**b
+      !Producto de la diagonal
+      Do i = 1, n
+         DetA = DetA*A(i,i)
+      end do
+      Write(*,*) ' Det(A) =',DetA
+\end{alltt}
+
+Esta subrutina aprovecha las propiedades de los determinantes para reducir a una matriz triangular superior. La finalidad de esto es poder calcular el determinante de cualquier matriz cuadrada como el producto de los elementos en la diagonal de la matriz trangular superior que produce \texttt{TSuperiro}. La variable \texttt{b} es un contador de intercambio de renglones y \texttt{n} es la dimensión de la matriz a reducir. Las demas variales son contadoras o auxiliares.
+\begin{alltt}
+      !________________Reducción a matriz triangular superior___________
+      Subroutine TSuperior(d,M,b)
+
+      Real M,C,R
+      Integer i,k,t,d,b
+      Dimension M(10,10),C(10),R(10)
+
+      b = 0
+      Do i = 1, d - 1
+
+         !Intercambio de renglones
+         k = 0
+         Do While (M(i,i).eq.0.AND.i.lt.d.AND.k.lt.d-i)
+            k = k + 1
+            if (M(i+k,i).ne.0) then
+               Do t = 1, d
+                  R(t) = M(i,t)
+                  M(i,t) = M(i+k,t)
+                  M(i+k,t) = R(t)
+               end do
+               b = b + 1
+            end if
+         end do
+
+         !Vector columna
+         Do k =  1, d
+            C(k) = M(k,i)
+         end do
+
+         !Operación entre renglones (+)(-)
+         Do k = i + 1, d
+            t = 1
+            !Proceso por eliminacion por el menor en el vector i
+            Do While (C(k).ne.0.AND.t.le.d)
+               M(k,t) = M(k,t) - (C(k)/C(i))*M(i,t)
+               t = t + 1
+            end do
+         end do
+
+      end do
+
+      Return
+      End Subroutine
+\end{alltt}
+\hline
+\vspace{0.6cm}
+
+El determinante de $A$ tiene que ser distinto de cero para poder aplicar construir la matriz adjunta \texttt{Adj}. Iterativamente se vuelve a llamar a la subrutina $TSuperior$ para reduir las matrices obtenidas en el procedimiento y poder calcular su determinante. 
+\begin{alltt}
+      if (DetA.ne.0) then
+
+         Do i = 1, n
+            Do j = 1, n
+
+              !Construyendo el menor M(i,j)
+               u = 1
+               Do k = 1, n
+                  v = 0
+                  Do t = 1, n
+                     if (k.ne.i.AND.t.ne.j) then
+                        v = v + 1
+                        M(u,v) = A(k,t)
+                     end if
+                  end do
+                  if (v.eq.n-1) then
+                     u = u + 1
+                  end if
+               end do
+
+               d = n - 1
+
+               !Determinante del menor M(i,j)
+               if (n.gt.2) then
+                  \textcolor{blue}{Call TSuperior(d,M,b)}
+               end if
+               Det(i,j) = (-1)**b
+               Do k = 1, n - 1
+                  Det(i,j) = Det(i,j)*M(k,k)
+               end do
+
+               !Elemento (i,j) de la matriz adjunta
+               Adj(i,j) = (-1)**(i + j)*Det(i,j)
+
+            end do
+         end do
+\end{alltt}
+Por ultimo, se construye la matriz inversa \texttt{IA}
+\begin{alltt}
+         !Matriz inversa
+         Do i = 1, n
+            Do j = 1, n
+               IA(i,j) = Adj(j,i)/DetA
+            end do
+         end do
+         Write(*,*) ' Matriz Inversa de A'
+         Write(*,*) ' '
+         Do i = 1, n
+            Write(*,99) (IA(i,j), j = 1, n)
+         end do
+  99     Format(9f8.5,9X)
+\end{alltt}
+\begin{figure}[h!]
+    \centering
+    \includegraphics[scale = 0.7]{Inversa A.png}
+    \caption{Matriz Inversa de A}
+    \label{Matriz Inversa de $A$}
+\end{figure}
+\begin{alltt}
+
+         Write(*,*) ' '
+         Write(*,*) 'Soluciones T(i,j) expresada en vector'
+         Write(*,*) ' '
+         Do i = 1, n
+            T(i) = 0
+            Do j = 1, n
+               T(i) = T(i) +  IA(i,j)*Y(j)
+            end do
+            Write(*,*) 'T(',i,') =',X(i)
+         end do
+         
+      end if
+
+      PAUSE
+      END PROGRAM
+\end{alltt}
+Obteniendo como resultados
+\begin{figure}[h!]
+    \centering
+    \includegraphics{Soluciones.png}
+    \caption{Soluciones $T_{i,i}$}
+\end{figure}
+\end{document}
