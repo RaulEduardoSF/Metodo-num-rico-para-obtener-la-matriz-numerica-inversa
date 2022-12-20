@@ -1,4 +1,4 @@
-# Metodo numérico para obtener la matriz inversa
+# Metodo numérico para resolver sistema de ecuaciones
 
 En el archivo `Inversa de una matriz - Solución Numérica.pdf` se encuentra una mejor exposición del algoritmo utilizado.
 
@@ -13,6 +13,22 @@ DetA = DetA*A(i,i)
 end do
 Write(*,*) ’ Det(A) =’,DetA
 ```
+```fortran
+!Determinante del menor M(i,j)
+if (n.gt.2) then
+Call TSuperior(d,M,b)
+end if
+Det(i,j) = (-1)**b
+Do k = 1, n - 1
+Det(i,j) = Det(i,j)*M(k,k)
+end do
+!Elemento (i,j) de la matriz adjunta
+Adj(i,j) = (-1)**(i + j)*Det(i,j)
+```
+```fortran
+
+```
+
 Para reducir la matrices algebraicamente y calcular comodamente los determinantes, reducimos todas las matrices reducidas `ij` a una matriz triangular superior.
 $$A^{-1} = \frac{(\text{Adj}(A))^{T}}{\left|A\right|}$$
 
