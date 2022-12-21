@@ -25,12 +25,14 @@ end do
 !Elemento (i,j) de la matriz adjunta
 Adj(i,j) = (-1)**(i + j)*Det(i,j)
 ```
-```fortran
-
-```
 
 Para reducir la matrices algebraicamente y calcular comodamente los determinantes, reducimos todas las matrices reducidas `ij` a una matriz triangular superior.
 $$A^{-1} = \frac{(\text{Adj}(A))^{T}}{\left|A\right|}$$
 
 ## $$N\times N \text{ dimension}$$
 El codigo es capaz de soportar cualquier tamaño de matriz y ademas identifica cuando no existe la matriz inversa.
+
+## Solución numerica a sistema de N ecuaciones
+Declarando un vector lineal que contengas las variable dependientes, podemos resolver para las variables independiendientes. La siguiente imagen muestra la solución de un sistema de 9 ecuaciónes lineales y 9 variables independientes.
+
+![image](https://user-images.githubusercontent.com/74220104/208798157-73a29d98-ef31-46ba-a50b-abe5dc0d2427.png)
