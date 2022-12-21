@@ -3,7 +3,7 @@
 En el archivo `Inversa de una matriz - Solución Numérica.pdf` se encuentra una mejor exposición del algoritmo utilizado.
 
 ## Algritmo
-El algoritmo aprovecha los conocimientos de algebra lineal para emplear el metodo de la matriz adjunta para obtener la matriz inversa y la Regla de Cramer para obtener el valor de los determinantes de las matrices reducidas.
+El algoritmo (escrto en Fortran) aprovecha los conocimientos de algebra lineal para emplear el metodo de la matriz adjunta para obtener la matriz inversa y la Regla de Cramer para obtener el valor de los determinantes de las matrices reducidas.
 ```fortran
 Call TSuperior(n,A,b)
 DetA = (-1)**b
